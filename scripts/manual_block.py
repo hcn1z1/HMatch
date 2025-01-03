@@ -2,9 +2,10 @@ import cv2
 import os
 import numpy as np
 import copy
+import matplotlib.pyplot as plt
 from src.block_matching import build_pyramid, match_block
 
-def run_manual_block(video_path, frame_idx, block_coords, second_frame_idx = None, block_size=16, search_window=16, pyramid_levels=3,output_dir = "results/"):
+def run_manual_block(video_path, frame_idx, block_coords, second_frame_idx = None, block_size=16, search_window=16, pyramid_levels=3,output_dir = "results/",plot = False):
     os.makedirs(output_dir, exist_ok=True)
     # Load the video
     cap = cv2.VideoCapture(video_path)
@@ -41,13 +42,21 @@ def run_manual_block(video_path, frame_idx, block_coords, second_frame_idx = Non
     # Visualize
     cv2.rectangle(f2, (matched_coords[1], matched_coords[0]),
                   (matched_coords[1]+block_size, matched_coords[0]+block_size), (0, 255, 0), 2)
-    cv2.rectangle(f2,(block_coords[1], block_coords[0]),
+    cv2.rectangle(f1,(block_coords[1], block_coords[0]),
                   (block_coords[1]+block_size, block_coords[0]+block_size), (0, 0, 255), 2)
     output_path = os.path.join(output_dir, f"annotated_{frame_idx}.png")
     cv2.imwrite(output_path, f2)
-    cv2.imshow("Matched Block in Next Frame", f2)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    if plot:
+        plt.figure(figsize=(10,5))
+        plt.subplot(1,2,1)
+        plt.title('Image 1 - Reference')
+        plt.imshow(cv2.cvtColor(f1, cv2.COLOR_BGR2RGB))
+
+        plt.subplot(1,2,2)
+        plt.title('Image 2 - Test with Matched Blocks')
+        plt.imshow(cv2.cvtColor(f2, cv2.COLOR_BGR2RGB))
+        plt.show()
+
 
 if __name__ == "__main__":
     run_manual_block("data/video.mp4", frame_idx=10, block_coords=(32, 32))
