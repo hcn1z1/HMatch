@@ -1,16 +1,17 @@
 from scripts.manual_block import run_manual_block
 from scripts.frame_block import run_frame_blocks
+from scripts.sequence_block import run_sequence_block
 from scripts.visualize_hierarchical_flow import visualize_hierarchical_flow
 from analysis.profiler import measure_execution_time, measure_memory_usage
 from core.argparser import parse_args
 import core.globals
-import matplotlib.pyplot as plt
 
 def main():
     parse_args()
 
     print("=== Hierarchical Block Matching ===")
     print(f"Algorithm: {core.globals.algorithm}")
+    print(f"Score Algorithm: {core.globals.score_algorithm}")
     print(f"Video: {core.globals.video}")
     print(f"Frame: {core.globals.frame}")
     print(f"Second Frame: {core.globals.secondframe}")
@@ -18,21 +19,26 @@ def main():
     print(f"Block Coordinates: {core.globals.block}")
     print(f"Block Size: {core.globals.block_size}")
     print(f"Metric: {core.globals.metric}")
-    print(f"Graph Enabled: {core.globals.graph}\n")
-    print("===================================")
+    print(f"Search Window: {core.globals.search_window}")
+    print(f"Graph Enabled: {core.globals.graph}")
+    print("===================================\n\n")
     if core.globals.algorithm == 'manual':
         print("[INFO] Running manual block matching...")
-        run_manual_block(core.globals.video, core.globals.frame, core.globals.block, pyramid_levels=core.globals.level, block_size=core.globals.block_size, second_frame_idx=core.globals.secondframe)
+        run_manual_block(core.globals.video, core.globals.frame, core.globals.block, pyramid_levels=core.globals.level, block_size=core.globals.block_size, second_frame_idx=core.globals.secondframe, plot=core.globals.graph, search_window=core.globals.search_window)
 
     elif core.globals.algorithm == 'frame':
         print("[INFO] Running frame-wide block matching...")
-        run_frame_blocks(core.globals.video, core.globals.frame, pyramid_levels=core.globals.level, block_size=core.globals.block_size, second_frame_idx=core.globals.secondframe)
+        run_frame_blocks(core.globals.video, core.globals.frame, pyramid_levels=core.globals.level, block_size=core.globals.block_size, second_frame_idx=core.globals.secondframe, search_window=core.globals.search_window, plot= core.globals.graph)
 
     elif core.globals.algorithm == 'hierarchical':
         print("[INFO] Visualizing hierarchical algorithm flow...")
-        visualize_hierarchical_flow(core.globals.video, core.globals.frame, core.globals.block, pyramid_levels=core.globals.level, block_size=core.globals.block_size, second_frame_idx=core.globals.secondframe)
+        visualize_hierarchical_flow(core.globals.video, core.globals.frame, core.globals.block, pyramid_levels=core.globals.level, block_size=core.globals.block_size, second_frame_idx=core.globals.secondframe, search_window=core.globals.search_window)
 
-    if core.globals.metric:
+    elif core.globals.algorithm == 'sequence':
+        print("[INFO Running sequenced block matching]")
+        run_sequence_block(core.globals.video, core.globals.frame, core.globals.block, pyramid_levels=core.globals.level, block_size=core.globals.block_size, second_frame_idx=core.globals.secondframe, plot=core.globals.graph, search_window=core.globals.search_window)
+    
+    if core.globals.metric: 
         if core.globals.metric == 'time':
             print("[INFO] Measuring execution time...")
             total_time = measure_execution_time(run_frame_blocks, core.globals.video, core.globals.frame)
@@ -41,9 +47,6 @@ def main():
             print("[INFO] Measuring memory usage...")
             memory_usage, peak_memory = measure_memory_usage(run_frame_blocks, core.globals.video, core.globals.frame)
             print(f"[RESULT] Memory Usage: {memory_usage:.4f} MB, Peak: {peak_memory:.4f} MB")
-
-    if core.globals.graph:
-        print("[INFO] Generating graph...")
 
 if __name__ == "__main__":
     main()
