@@ -3,3 +3,4 @@ opencv-python==4.10.0.84
 matplotlib
 tqdm
 networkx
+scikit-learn==1.6.0
