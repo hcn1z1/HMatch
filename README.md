@@ -58,16 +58,22 @@ python main.py -a [algorithm] -v [video_path] -f [frame_index] -sf [second_frame
 | `--levels`     | `-l`  | Int    | `3`          | Number of pyramid levels to construct.                                                          |
 | `--graph`      | `-g`  | Flag   | `False`      | Enable graphical output.                                                                         |
 | `--size`       | `-s`  | Int    | `16`         | Set block size for all block matching.                                                          |
+| `--search`     | `-sa` | Int    | `16`         | Search Area size to analyze |
+
 
 
 ### Examples
 
 1. **Manual Block Matching:**
+
+   ![""](assets/marked-ball.jpg)
    ```bash
    python main.py -a manual -v data/video.mp4 -f 10 -b 32,32
    ```
 
 2. **Frame-Wide Block Matching:**
+
+   ![""](assets/mult-block-marked-bull.png)
    ```bash
    python main.py -a frame -v data/video.mp4 -f 10
    ```
@@ -81,3 +87,20 @@ python main.py -a [algorithm] -v [video_path] -f [frame_index] -sf [second_frame
    ```bash
    python main.py -a frame -v data/video.mp4 -f 10 -m time
    ```
+
+5. **Sequence Bloc Matching:**
+
+   ![](assets/sequence.webp)
+   ```bash
+   python main.py -a sequence -v data/low-2.mp4 -f 10 -sf 50 -b 150,140 -g -sa 32 -s 180 -l 3 
+   ```
+   **Another example** :
+   ![](assets/sequence-ball.webp)
+
+6. **Heatmap Debug:**
+
+   You can also debug with a heatmap if needed. You need tho to change the script. you have to go to [block_matching.py](src/block_matching.py), then, change `DEBUG` to `True`
+   ```python
+   DEBUG = True
+   ```
+   ![](assets/heatmap-0.png)![](assets/heatmap-1.png)![](assets/heatmap-2.png)
