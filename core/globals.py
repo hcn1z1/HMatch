@@ -9,3 +9,5 @@ frame: Optional[int] = 0
 secondframe: Optional[int] = None
 level: Optional[int] = 3
 block_size: Optional[int] = 16
+search_window: Optional[int] = 16
+score_algorithm: Optional[str] = "MI"
