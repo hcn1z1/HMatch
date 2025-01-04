@@ -111,4 +111,5 @@ python main.py -a [algorithm] -v [video_path] -f [frame_index] -sf [second_frame
 ## Dechotomic Search
 Here are some results with the new algorithme Log (dichotomous)
 
-![](assets/log-falling-ball.webm)
+  ![](assets/log-falling-ball.webp)
+  ![](assets/log-bicycle.webp)
