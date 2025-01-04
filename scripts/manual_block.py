@@ -2,8 +2,9 @@ import cv2
 import os
 import numpy as np
 import copy
+import core.globals
 import matplotlib.pyplot as plt
-from src.block_matching import build_pyramid, match_block
+from src.block_matching import build_pyramid, match_block, logarithmic_search
 
 def run_manual_block(video_path, frame_idx, block_coords, second_frame_idx = None, block_size=16, search_window=16, pyramid_levels=3,output_dir = "results/",plot = False):
     os.makedirs(output_dir, exist_ok=True)
@@ -11,8 +12,7 @@ def run_manual_block(video_path, frame_idx, block_coords, second_frame_idx = Non
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         raise FileNotFoundError(f"Unable to open video: {video_path}")
-
-    # Read the required frame and the next frame
+    
     cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
     ret, frame1 = cap.read()
     cap.set(cv2.CAP_PROP_POS_FRAMES,second_frame_idx) if second_frame_idx != None else None
@@ -32,8 +32,8 @@ def run_manual_block(video_path, frame_idx, block_coords, second_frame_idx = Non
 
     pyramid = build_pyramid(frame2, pyramid_levels)
 
-    matched_coords, _ = match_block(pyramid, target_block, (y, x), search_window, block_size)
-
+    if core.globals.algorithm in ['hierarchical', 'hier']: matched_coords, _ = match_block(pyramid, target_block, (y, x), search_window, block_size)
+    elif core.globals.algorithm in ["logarithmic","log"]: matched_coords, _ = logarithmic_search(frame2, target_block, y, x, search_window, block_size)
     # Output results
     print(f"Frame Index: {frame_idx}")
     print(f"Target block coordinates: {block_coords}")

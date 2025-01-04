@@ -8,8 +8,10 @@ def parse_args():
     )
 
     # Define the relevant arguments for this program
-    program.add_argument('-a', '--algorithm', type=str, choices=['manual', 'frame', 'hierarchical', 'sequence'], required=True,
-                         help="Algorithm to run: manual (single block), frame-wide, or hierarchical visualization.")
+    program.add_argument('-a', '--algorithm', type=str, choices=['logarithmic', 'log', 'hierarchical', 'hier'], required=True,
+                         help="Algorithm to run: logarithmic or hierarchical.")
+    program.add_argument('-t', '--type', type=str, choices=['manual', 'frame', 'sequence'],
+                         help="Type of processing: manual (single block), frame-wide ",default="manual")
     program.add_argument('-v', '--video', type=str, required=True, help="Path to the video file.")
     program.add_argument('-f', '--frame', type=int, default=0, help="Frame index to analyze (default: 0).")
     program.add_argument('-sf', '--secondframe', type=int, default=None, help="Second Frame index to analyze (default: None). If algorithm is 'sequence' this variable will be used a sequence number (Default: 10)")
@@ -26,6 +28,7 @@ def parse_args():
 
     # Update core.globals with the parsed arguments
     core.globals.algorithm = args.algorithm
+    core.globals.processing_type = args.type
     core.globals.video = args.video
     core.globals.frame = args.frame
     core.globals.secondframe = 10 if args.secondframe == None and args.algorithm == 'sequence' else args.secondframe

@@ -4,7 +4,7 @@ import time
 import matplotlib.pyplot as plt
 import copy
 import core.globals
-from src.block_matching import build_pyramid, match_block, compute_residual
+from src.block_matching import build_pyramid, match_block, compute_residual,logarithmic_search
 from tqdm import tqdm
 
 FPS = 12
@@ -42,7 +42,9 @@ def run_sequence_block(video_path, frame_idx, block_coords, second_frame_idx = N
             target_block = frame1[y2:y2+block_size, x2:x2+block_size]
 
             pyramid = build_pyramid(frame2, pyramid_levels)
-            matched_coords, score = match_block(pyramid, target_block, (y, x), search_window, block_size)
+            if core.globals.algorithm in ['hierarchical', 'hier']: matched_coords, score = match_block(pyramid, target_block, (y, x), search_window, block_size)
+            elif core.globals.algorithm in ["logarithmic","log"]: matched_coords, score = logarithmic_search(frame2, target_block, y, x, search_window, block_size)
+
             matched_block = frame2[matched_coords[0]:matched_coords[0] + block_size,
                                             matched_coords[1]:matched_coords[1] + block_size]
             score = abs(score)

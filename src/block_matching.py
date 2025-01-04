@@ -6,10 +6,20 @@ import core.globals
 from sklearn.metrics import mutual_info_score
 
 
-THRESHOLD = 70 # Lower is better for Residual score
+THRESHOLD = 50 # Lower is better for Residual score
 DEBUG = False # Debug mode will be useful to track heatmap
 
 import numpy as np
+
+
+def compute_mad(block1, block2):
+    """
+    Computes the Mean Absolute Difference (MAD) between two blocks.
+    Both blocks must have the same shape.
+    """
+    # Convert to float in case inputs are integers
+    diff = np.abs(block1.astype(np.float32) - block2.astype(np.float32))
+    return np.mean(diff)
 
 def compute_ssd(block1, block2):
     """
@@ -112,6 +122,99 @@ def match_block(pyramid, target_block, start_coords, search_window, block_size=1
 
     return best_coords, best_score
 
+def logarithmic_search(ref_frame, target_block, top_left_y, top_left_x, search_size, block_size, init_step=16):
+    ref_top = top_left_y
+    ref_left = top_left_x
+    ref_bottom = top_left_y + search_size - block_size
+    ref_right = top_left_x + search_size - block_size
+    H, W = target_block.shape[:2]
+    
+    center_y = ref_top
+    center_x = ref_left
+    
+    step = 2**core.globals.level
+    
+    def clip(y, x,frame_height,frame_width):
+        y = max(0, min(y, frame_height - block_size))
+        x = max(0, min(x, frame_width - block_size))
+        return y, x
+    
+    center_block = ref_frame[center_y:center_y+ block_size,center_x:center_x+ block_size]
+    if center_block.shape != (block_size, block_size):
+        raise ValueError(f"Center block has incorrect shape: {center_block.shape}, expected ({block_size}, {block_size})")
+
+    best_score = compute_mad(target_block, center_block)
+    best_y, best_x = center_y, center_x
+
+    while step >= 1:
+        # We'll gather all candidate positions based on the current center
+        candidate_offsets = [
+            (0, 0),             # center
+            (-step, 0),         # up
+            (step, 0),          # down
+            (0, -step),         # left
+            (0, step),          # right
+            (-step, -step),     # top-left
+            (-step, step),      # top-right
+            (step, -step),      # bottom-left
+            (step, step)        # bottom-right
+        ]
+
+        # We'll figure out the best among these candidates,
+        # but we won't immediately update best_y, best_x
+        tmp_best_score = best_score
+        tmp_best_y = best_y
+        tmp_best_x = best_x
+        if DEBUG: heatmap = np.zeros((ref_frame.shape[0], ref_frame.shape[1]))
+        # Evaluate each candidate
+        for dy, dx in candidate_offsets:
+            cy = best_y + dy
+            cx = best_x + dx
+            cy, cx = clip(cy, cx,ref_frame.shape[0],ref_frame.shape[1])
+            # Extract the candidate block
+            candidate_block = ref_frame[cy:cy+block_size, cx:cx+block_size]
+            if candidate_block.shape != (block_size, block_size):
+                continue  # skip invalid blocks
+
+            # You can choose your metric here
+            if core.globals.score_algorithm == "NCC":
+                score = -compute_ncc(target_block, candidate_block)  # negate => lower is better
+            elif core.globals.score_algorithm == "MI":
+                score = -compute_mutual_information(target_block, candidate_block)
+            elif core.globals.score_algorithm == "SSD":
+                score = compute_ssd(target_block, candidate_block)
+            elif core.globals.score_algorithm == "SAD":
+                score = np.sum(np.abs(target_block - candidate_block))
+            else:
+                score = compute_mad(target_block, candidate_block)  # default is MAD => lower is better
+
+            # If this candidate is better, remember it
+            if DEBUG: heatmap[tmp_best_y, tmp_best_x] = score
+            if score < tmp_best_score:
+                tmp_best_score = score
+                tmp_best_y = cy
+                tmp_best_x = cx
+                
+
+        # After checking all 9 positions for this step size,
+        # move the center to the best one found
+
+        # Visualize the heatmap for debugging
+        if DEBUG: print(f"Level {step}: Best Coords = {(tmp_best_y,tmp_best_x)}, Best Score = {best_score}")
+
+        if DEBUG:
+            plt.title("Heatmap at Pyramid Level ")
+            plt.imshow(heatmap, cmap='hot')
+            plt.colorbar(label="Matching Score")
+            plt.show()
+
+        best_score = tmp_best_score
+        best_y = tmp_best_y
+        best_x = tmp_best_x
+
+        # Halve the step size and keep going
+        step //= 2
+    return (best_y, best_x), best_score
 
 def compute_residual(block1, block2):
     """
@@ -130,16 +233,20 @@ def process_frame(frame, reference_frame, block_size=16, search_window=16, pyram
     origin_block = []
     with tqdm(total=len(blocks), desc="Processing Blocks", unit=" block") as pbar:
         for block, coord in zip(blocks, coords):
-            matched_coord, _ = match_block(pyramid, block, coord, search_window, block_size)
-            matched_block = reference_frame[matched_coord[0]:matched_coord[0] + block_size,
-                                            matched_coord[1]:matched_coord[1] + block_size]
-            residual = compute_residual(block, matched_block)
+            try:
+                if core.globals.algorithm in ['hierarchical', 'hier']: matched_coord, _ = match_block(pyramid, block, coord, search_window, block_size)
+                elif core.globals.algorithm in ["logarithmic","log"]: matched_coord, _ = logarithmic_search(reference_frame, block, coord[0], coord[1], search_window, block_size)
+                matched_block = reference_frame[matched_coord[0]:matched_coord[0] + block_size,
+                                                matched_coord[1]:matched_coord[1] + block_size]
+                residual = compute_residual(block, matched_block)
 
-            score = residual.sum()/(block_size**2)
-            if THRESHOLD >= score:
-                matched_blocks.append(matched_coord)
-                origin_block.append(coord)
-                residuals.append(residual)
+                score = residual.sum()/(block_size**2)
+                if THRESHOLD >= score:
+                    matched_blocks.append(matched_coord)
+                    origin_block.append(coord)
+                    residuals.append(residual)
+            except Exception as e:
+                print(f"[ERROR] Unexpected Error Frame {pbar.n} : {str(e)}")
             pbar.update(1)
 
     return matched_blocks, residuals,origin_block

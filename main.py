@@ -11,6 +11,7 @@ def main():
 
     print("=== Hierarchical Block Matching ===")
     print(f"Algorithm: {core.globals.algorithm}")
+    print(f"Processing Type: {core.globals.processing_type}")
     print(f"Score Algorithm: {core.globals.score_algorithm}")
     print(f"Video: {core.globals.video}")
     print(f"Frame: {core.globals.frame}")
@@ -22,19 +23,15 @@ def main():
     print(f"Search Window: {core.globals.search_window}")
     print(f"Graph Enabled: {core.globals.graph}")
     print("===================================\n\n")
-    if core.globals.algorithm == 'manual':
+    if core.globals.processing_type == 'manual':
         print("[INFO] Running manual block matching...")
         run_manual_block(core.globals.video, core.globals.frame, core.globals.block, pyramid_levels=core.globals.level, block_size=core.globals.block_size, second_frame_idx=core.globals.secondframe, plot=core.globals.graph, search_window=core.globals.search_window)
 
-    elif core.globals.algorithm == 'frame':
+    elif core.globals.processing_type == 'frame':
         print("[INFO] Running frame-wide block matching...")
         run_frame_blocks(core.globals.video, core.globals.frame, pyramid_levels=core.globals.level, block_size=core.globals.block_size, second_frame_idx=core.globals.secondframe, search_window=core.globals.search_window, plot= core.globals.graph)
 
-    elif core.globals.algorithm == 'hierarchical':
-        print("[INFO] Visualizing hierarchical algorithm flow...")
-        visualize_hierarchical_flow(core.globals.video, core.globals.frame, core.globals.block, pyramid_levels=core.globals.level, block_size=core.globals.block_size, second_frame_idx=core.globals.secondframe, search_window=core.globals.search_window)
-
-    elif core.globals.algorithm == 'sequence':
+    elif core.globals.processing_type == 'sequence':
         print("[INFO Running sequenced block matching]")
         run_sequence_block(core.globals.video, core.globals.frame, core.globals.block, pyramid_levels=core.globals.level, block_size=core.globals.block_size, second_frame_idx=core.globals.secondframe, plot=core.globals.graph, search_window=core.globals.search_window)
     

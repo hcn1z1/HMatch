@@ -2,6 +2,7 @@ import cv2
 import os
 import random
 import matplotlib.pyplot as plt
+import core.globals
 from src.block_matching import process_frame
 from src.utils import load_image
 
@@ -40,11 +41,11 @@ def run_frame_blocks(video_path, frame_idx, second_frame_idx = None,block_size=1
         frame2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB)
         frame1 = cv2.cvtColor(frame1, cv2.COLOR_BGR2RGB)
         cv2.rectangle(
-            frame2,          # on the second frame
+            frame2,
             top_left,
             bottom_right,
-            color,     # red rectangle in BGR
-            2                # line thickness
+            color,
+            2 
         )
         y, x = original
         top_left = (x , y)

@@ -49,7 +49,8 @@ python main.py -a [algorithm] -v [video_path] -f [frame_index] -sf [second_frame
 
 | Argument       | Short | Type   | Default      | Description                                                                                       |
 |----------------|-------|--------|--------------|---------------------------------------------------------------------------------------------------|
-| `--algorithm`  | `-a`  | String | Required     | Algorithm to run (`manual`, `frame`, `hierarchical`).                                            |
+| `--algorithm`  | `-a`  | String | `log`     | Algorithm to run (`logarithmic`, `log`, `hierarchical`,`hier`).                                            |
+| `--type`  | `-t`  | String | Required     | Script to run (`sequence`, `manual`,`frame`).                                            |
 | `--video`      | `-v`  | String | Required     | Path to the video file.                                                                          |
 | `--frame`      | `-f`  | Int    | `0`          | Frame index to analyze.                                                                          |
 | `--secondframe`| `-sf` | Int    | `None`       | Second frame index to analyze.                                                                  |
@@ -68,7 +69,7 @@ python main.py -a [algorithm] -v [video_path] -f [frame_index] -sf [second_frame
 
    ![""](assets/marked-ball.jpg)
    ```bash
-   python main.py -a manual -v data/video.mp4 -f 10 -b 32,32
+   python main.py -a hier -t manual -v data/video.mp4 -f 10 -b 32,32
    ```
 
 2. **Frame-Wide Block Matching:**
@@ -80,19 +81,19 @@ python main.py -a [algorithm] -v [video_path] -f [frame_index] -sf [second_frame
 
 3. **Visualize Hierarchical Algorithm Flow:**
    ```bash
-   python main.py -a hierarchical -v data/video.mp4 -f 10 -b 32,32
+   python main.py -a hier -t hierarchical -v data/video.mp4 -f 10 -b 32,32
    ```
 
 4. **Performance Analysis (Execution Time):**
    ```bash
-   python main.py -a frame -v data/video.mp4 -f 10 -m time
+   python main.py -a hier -t frame -v data/video.mp4 -f 10 -m time
    ```
 
 5. **Sequence Bloc Matching:**
 
    ![](assets/sequence.webp)
    ```bash
-   python main.py -a sequence -v data/low-2.mp4 -f 10 -sf 50 -b 150,140 -g -sa 32 -s 180 -l 3 
+   python main.py -a hier -t sequence -v data/low-2.mp4 -f 10 -sf 50 -b 150,140 -g -sa 32 -s 180 -l 3 
    ```
    **Another example** :
    ![](assets/sequence-ball.webp)
@@ -104,3 +105,10 @@ python main.py -a [algorithm] -v [video_path] -f [frame_index] -sf [second_frame
    DEBUG = True
    ```
    ![](assets/heatmap-0.png)![](assets/heatmap-1.png)![](assets/heatmap-2.png)
+
+
+
+## Dechotomic Search
+Here are some results with the new algorithme Log (dichotomous)
+
+![](assets/log-falling-ball.webm)
