@@ -68,20 +68,6 @@ def build_pyramid(image, levels):
     return pyramid
 
 def match_block(pyramid, target_block, start_coords, search_window, block_size=16):
-    """
-    Match a block at each pyramid level. Searches the entire image if search_window is set to -1.
-
-    Args:
-        pyramid: List of images at different pyramid levels.
-        target_block: The block to match (from the target frame).
-        start_coords: Coordinates of the initial block.
-        search_window: Size of the search window. Use -1 for full image search.
-        block_size: Size of the block (e.g., 16x16).
-
-    Returns:
-        best_coords: Coordinates of the best-matched block.
-        best_score: Best matching score (lower is better for NCC or SAD).
-    """
     best_coords = start_coords
     best_score = float('inf')  # Lower is better for NCC or SAD
     h, w = target_block.shape
